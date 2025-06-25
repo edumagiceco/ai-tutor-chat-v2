@@ -1,0 +1,56 @@
+[
+  {
+    "test": "Login user",
+    "status": "\u2705 PASS",
+    "message": "Token received",
+    "timestamp": "2025-06-25 16:18:21"
+  },
+  {
+    "test": "Login admin",
+    "status": "\u2705 PASS",
+    "message": "Token received",
+    "timestamp": "2025-06-25 16:18:21"
+  },
+  {
+    "test": "Login institution",
+    "status": "\u2705 PASS",
+    "message": "Token received",
+    "timestamp": "2025-06-25 16:18:21"
+  },
+  {
+    "test": "Get user profile",
+    "status": "\u2705 PASS",
+    "message": "User: user@ai-tutor.com",
+    "timestamp": "2025-06-25 16:18:21"
+  },
+  {
+    "test": "Create conversation",
+    "status": "\u2705 PASS",
+    "message": "ID: 3",
+    "timestamp": "2025-06-25 16:18:21"
+  },
+  {
+    "test": "Send message",
+    "status": "\u2705 PASS",
+    "message": "Message sent and response received",
+    "timestamp": "2025-06-25 16:18:43"
+  },
+  {
+    "test": "Admin users list",
+    "status": "\u274c FAIL",
+    "message": "Status: 404",
+    "timestamp": "2025-06-25 16:18:43"
+  },
+  {
+    "test": "Login user",
+    "status": "\u2705 PASS",
+    "message": "Token received",
+    "timestamp": "2025-06-25 16:18:43"
+  },
+  {
+    "test": "Access control - User blocked from admin",
+    "status": "\u274c FAIL",
+    "message": "Status: 404",
+    "timestamp": "2025-06-25 16:18:43"
+  }
+]
