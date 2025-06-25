@@ -73,3 +73,6 @@ dist/
 .cache/
 # MCP configuration (contains API keys)
 .mcp.json
+
+# Claude.md file (project instructions)
+CLAUDE.md
