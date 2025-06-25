@@ -40,6 +40,30 @@ services:
       - ai-tutor-network
     volumes:
       - ./backend:/app
+      - ./backend/app/reports:/app/app/reports
+
+  celery-worker:
+    build: ./backend
+    command: celery -A app.core.celery_app worker --loglevel=info
+    environment:
+      - DATABASE_URL=mysql+pymysql://magic7:ZAvEjgkEzu8K**@mysql:3306/magic7?charset=utf8mb4
+      - REDIS_URL=redis://redis:6379
+      - AI_SERVICE_URL=http://ai-service:8000
+      - QDRANT_URL=http://qdrant:6333
+      - JWT_SECRET=${JWT_SECRET}
+      - SECRET_KEY=${JWT_SECRET}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PYTHONPATH=/app
+    depends_on:
+      - mysql
+      - redis
+      - backend
+    networks:
+      - ai-tutor-network
+    volumes:
+      - ./backend:/app
+      - ./backend/app/reports:/app/app/reports
 
   ai-service:
     build: ./ai-service

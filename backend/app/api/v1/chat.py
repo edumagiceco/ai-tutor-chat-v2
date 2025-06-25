@@ -1,7 +1,9 @@
-from typing import List
+from typing import List, AsyncGenerator
 from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
+import json
 
 from app.core.database import get_db
 from app.api.deps import get_current_active_user
@@ -87,3 +89,73 @@ async def send_message(
             MessageRole.assistant
         )
         return error_message
+
+
+@router.post("/conversations/{conversation_id}/messages/stream")
+async def send_message_stream(
+    conversation_id: int,
+    message_data: MessageCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Send message with streaming response"""
+    # Verify conversation ownership
+    conversation = get_conversation_by_id(db, conversation_id)
+    if not conversation or conversation.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    # Add user message
+    user_message = add_message_to_conversation(
+        db, conversation_id, message_data.content, MessageRole.user
+    )
+    
+    async def generate() -> AsyncGenerator[str, None]:
+        """Generate streaming response"""
+        try:
+            # Start streaming response
+            yield f"data: {json.dumps({'type': 'start', 'message_id': None})}\n\n"
+            
+            # Get AI response with streaming
+            full_response = ""
+            async for chunk in get_ai_response_stream(
+                message_data.content,
+                conversation.messages,
+                current_user
+            ):
+                full_response += chunk
+                # Send chunk as SSE
+                yield f"data: {json.dumps({'type': 'chunk', 'content': chunk})}\n\n"
+            
+            # Save complete AI response to database
+            ai_message = add_message_to_conversation(
+                db, conversation_id, full_response, MessageRole.assistant
+            )
+            
+            # Send completion signal
+            yield f"data: {json.dumps({'type': 'complete', 'message_id': ai_message.id})}\n\n"
+            
+        except Exception as e:
+            # Send error signal
+            yield f"data: {json.dumps({'type': 'error', 'error': str(e)})}\n\n"
+            
+            # Save error message to database
+            add_message_to_conversation(
+                db, conversation_id,
+                "죄송합니다. 응답을 생성하는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+                MessageRole.assistant
+            )
+    
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Content-Type": "text/event-stream",
+            "X-Accel-Buffering": "no",  # Disable Nginx buffering
+        }
+    )
+
+
+# Import streaming AI service function
+from app.services.ai_service import get_ai_response_stream

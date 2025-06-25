@@ -20,9 +20,10 @@
    - 네트워크 연결 검증
 
 ### 현재 진행 상태
-- 날짜: 2025년 6월 24일
-- 버전: v2.0
-- 상태: Docker 환경에서 모든 서비스 정상 작동 중
+- 날짜: 2025년 6월 25일
+- 버전: v2.5
+- 상태: Phase 3 프론트엔드 개발 진행 중
+- 완료: 3단계 권한 시스템 구현, 관리자 UI 기본 구조, RAG 문서 관리 인터페이스, 통계 분석 페이지, 시스템 설정 페이지, 콘텐츠 관리 시스템
 
 ### 접속 정보
 - **Frontend**: http://localhost:3000
@@ -32,6 +33,11 @@
 - **MySQL**: localhost:3306
 - **Redis**: localhost:6379
 - **Qdrant**: localhost:6333
+
+### 초기 계정 정보
+- **슈퍼 관리자**: admin@ai-tutor.com / admin123!@#
+- **기관 관리자**: institution@ai-tutor.com / inst123!
+- **일반 사용자**: user@ai-tutor.com / user123!
 
 ## 1. 시스템 아키텍처 개요
 
@@ -155,6 +161,9 @@ CREATE TABLE users (
     job_title VARCHAR(100),
     department VARCHAR(100),
     ai_level ENUM('beginner', 'intermediate', 'advanced', 'expert') DEFAULT 'beginner',
+    role ENUM('user', 'institution_admin', 'super_admin') NOT NULL DEFAULT 'user',
+    institution_id VARCHAR(100) DEFAULT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -435,23 +444,25 @@ LOG_LEVEL=INFO
 ## 9. 개발 단계별 구현 계획
 
 ### Phase 1: 기반 인프라 구축 (2주)
-- [ ] Docker Compose 환경 설정
-- [ ] MySQL 데이터베이스 스키마 생성
-- [ ] Qdrant 벡터 DB 초기 설정
-- [ ] FastAPI 기본 프로젝트 구조 생성
-- [ ] React 프로젝트 초기화
+- [x] Docker Compose 환경 설정
+- [x] MySQL 데이터베이스 스키마 생성
+- [x] Qdrant 벡터 DB 초기 설정
+- [x] FastAPI 기본 프로젝트 구조 생성
+- [x] React 프로젝트 초기화
 
 ### Phase 2: 핵심 백엔드 개발 (3주)
-- [ ] 사용자 인증 시스템 구현
-- [ ] 채팅 API 엔드포인트 개발
-- [ ] AI 서비스 통합 (Claude API)
-- [ ] RAG 시스템 구현
-- [ ] 벡터 검색 기능 구현
+- [x] 사용자 인증 시스템 구현
+- [x] 채팅 API 엔드포인트 개발
+- [x] AI 서비스 통합 (Claude API)
+- [x] RAG 시스템 구현 (LangChain + LangGraph + Qdrant)
+- [x] 벡터 검색 기능 구현
 
 ### Phase 3: 프론트엔드 개발 (3주)
-- [ ] 로그인/회원가입 UI
-- [ ] 채팅 인터페이스 구현
-- [ ] 대시보드 및 학습 진도 표시
+- [x] 로그인/회원가입 UI
+- [x] 채팅 인터페이스 구현
+- [x] 대시보드 및 학습 진도 표시
+- [x] 관리자 UI 기본 구조 생성
+- [x] RAG 문서 관리 인터페이스 구현
 - [ ] 실시간 통신 구현
 - [ ] 반응형 디자인 적용
 
@@ -528,6 +539,89 @@ LOG_LEVEL=INFO
   - API 통신 서비스 구현
 - [x] AI 서비스 통합 (기본 구조 완료)
   - Anthropic Claude API 연동
+  - RAG 시스템 구현 (LangChain + LangGraph)
+- [x] 관리자 시스템 구현 (기본 구조)
+  - [x] 관리자 프론트엔드 기본 구조 개발
+  - [x] AdminLayout 및 AdminRoute 구현
+  - [x] 관리자 대시보드 페이지 구현
+  - [x] RAG 문서 관리 인터페이스 구현
+  - [x] RAG API 백엔드 연동
+    - 문서 목록 조회
+    - 문서 업로드 (파일/텍스트)
+    - 문서 삭제
+    - 실시간 업로드 상태 표시
+  - [x] 3단계 권한 시스템 구현
+    - UserRole enum 구현 (user, institution_admin, super_admin)
+    - 권한별 dependency 함수 구현
+    - 데이터베이스 스키마 업데이트 (role, institution_id 컬럼 추가)
+    - 초기 관리자 계정 생성 (admin@ai-tutor.com / admin123!@#)
+    - 관리자 전용 로그인 제거 (통합 인증 시스템 사용)
+  - [x] 사용자 관리 페이지 업데이트
+    - 사용자 목록 조회 및 필터링
+    - 사용자 상태 토글 (활성/비활성)
+    - 3단계 권한 변경 기능 (일반/기관관리자/슈퍼관리자)
+    - 사용자 상세 정보 모달
+    - 기관 ID 표시 (기관 관리자용)
+  - [x] 통계 분석 페이지 구현
+    - 사용자 분석 (권한별 분포, 신규 가입자 추이)
+    - 학습 분석 (평균 대화 길이, 학습 시간, 완료율)
+    - 사용량 분석 (시간대별 사용량, API 사용량)
+    - 날짜 범위 선택 기능
+  - [x] 시스템 설정 페이지 구현
+    - 일반 설정 (사이트 정보, 유지보수 모드)
+    - AI 설정 (모델 선택, 파라미터 설정)
+    - 보안 설정 (비밀번호 정책, 2단계 인증)
+    - 알림 설정 (이메일, Slack)
+    - 저장소 설정 (파일 크기, 할당량)
+    - 유지보수 기능 (캐시 삭제, DB 백업)
+  - [x] 관리자 API 엔드포인트 추가 개발
+  - [x] RBAC 권한 시스템 구현
+  - [x] 콘텐츠 관리 시스템 구현
+    - Content/ContentCategory 데이터베이스 모델 생성
+    - Content CRUD API 엔드포인트 구현
+    - ContentPage 컴포넌트 (목록, 필터링, 검색)
+    - ContentEditor 컴포넌트 (마크다운 편집기, SEO 설정)
+    - CategoryManager 컴포넌트 (계층적 카테고리 관리)
+    - 발행/보관 기능 구현
+  - [x] 실시간 기능 구현
+    - WebSocket 서버 구현 (채팅, 사용자 활동)
+    - 채팅 메시지 스트리밍 (SSE 방식)
+    - 실시간 연결 관리
+  - [x] 시스템 모니터링 대시보드
+    - MonitoringPage 구현
+    - 실시간 시스템 메트릭 표시
+    - 서비스 상태 모니터링
+    - 활동 로그 표시
+  - [x] 학습 경로 시각화
+    - LearningPathVisualization 컴포넌트
+    - 레벨별 노드 표시
+    - 진행 상태 시각화 (완료/진행중/잠김)
+    - 스킬 및 포인트 시스템
+  - [x] 리포트 생성 시스템
+    - Report 데이터베이스 모델 생성
+    - 리포트 생성 API 엔드포인트
+    - ReportsPage 구현 (리포트 유형 선택, 파라미터 설정)
+    - 리포트 목록 및 다운로드 기능
+    - 리포트 진행 상태 추적
+- [x] 리포트 실제 생성 기능
+  - [x] 백그라운드 작업 시스템 (Celery)
+    - Celery worker 설정 및 Docker Compose 통합
+    - Redis를 브로커로 사용
+    - 작업 진행 상태 추적
+  - [x] PDF/Excel/CSV 파일 생성
+    - ReportLab을 사용한 PDF 생성
+    - XlsxWriter를 사용한 Excel 생성
+    - Pandas를 사용한 CSV 생성
+  - [x] 리포트 템플릿 시스템
+    - 사용자 진도 리포트
+    - 학습 분석 리포트
+    - AI 도구 사용 현황
+    - 월간 종합 리포트
+    - 맞춤형 리포트
+  - [x] 리포트 진행 상태 모달
+    - 실시간 진행률 표시
+    - 완료/실패 상태 알림
+- [ ] 한글 폰트 지원 (PDF)
 - [ ] 테스트 및 배포
 
-**최종 업데이트**: 2025-06-24
+**최종 업데이트**: 2025-06-25 13:15

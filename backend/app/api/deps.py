@@ -44,3 +44,27 @@ async def get_current_active_user(
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+
+async def get_institution_admin_user(
+    current_user: User = Depends(get_current_active_user)
+) -> User:
+    from app.models.user import UserRole
+    if current_user.role not in [UserRole.institution_admin, UserRole.super_admin]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permissions. Institution admin or super admin required."
+        )
+    return current_user
+
+
+async def get_super_admin_user(
+    current_user: User = Depends(get_current_active_user)
+) -> User:
+    from app.models.user import UserRole
+    if current_user.role != UserRole.super_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permissions. Super admin required."
+        )
+    return current_user

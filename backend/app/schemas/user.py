@@ -2,7 +2,7 @@ from typing import Optional
 from datetime import datetime
 from pydantic import BaseModel, EmailStr
 
-from app.models.user import AILevel
+from app.models.user import AILevel, UserRole
 
 
 class UserBase(BaseModel):
@@ -11,6 +11,8 @@ class UserBase(BaseModel):
     job_title: Optional[str] = None
     department: Optional[str] = None
     ai_level: AILevel = AILevel.beginner
+    role: UserRole = UserRole.user
+    institution_id: Optional[str] = None
 
 
 class UserCreate(UserBase):
@@ -22,6 +24,8 @@ class UserUpdate(BaseModel):
     job_title: Optional[str] = None
     department: Optional[str] = None
     ai_level: Optional[AILevel] = None
+    role: Optional[UserRole] = None
+    institution_id: Optional[str] = None
 
 
 class UserInDBBase(UserBase):
