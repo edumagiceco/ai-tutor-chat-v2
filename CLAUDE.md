@@ -173,4 +173,5 @@ DB 패스워드: ZAvEjgkEzu8K**
 16. 개발은 맥북(M4)에서 되지만, 정식 서비스는 Ubuntu 운영체제(Intel)에서 작동해야되. 해당 부분 고려해서 배포 버전 개발해줘.
 17. OpenAI, Anthrophic 등의 중요 LLM API key 값은 .env 파일로 별도로 관리하고, 해당 부분은 github에 업로드 되지 않도록 구성해서 관리해줘. 주요한 보안키가 외부로 유출되면 안돼. 
 18. ./docs/ai_education_chatbot_plan.md 에 위치하는 내용을 참고해서, 본 프로젝트 개발 목적을 인지하고, 이 범위안에서 전체 맥락이 유지되도록 개발해야되. 
+19. github 업로드 주소는 https://github.com/MagicecoleAI 에 업로드해줘. 
 
