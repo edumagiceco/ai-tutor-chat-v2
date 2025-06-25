@@ -43,8 +43,9 @@ services:
       - ./backend/app/reports:/app/app/reports
 
   celery-worker:
-    build: ./backend
-    command: celery -A app.core.celery_app worker --loglevel=info
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.celery.simple
     environment:
       - DATABASE_URL=mysql+pymysql://magic7:ZAvEjgkEzu8K**@mysql:3306/magic7?charset=utf8mb4
       - REDIS_URL=redis://redis:6379

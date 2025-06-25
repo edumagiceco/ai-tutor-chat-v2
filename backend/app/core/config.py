@@ -49,9 +49,13 @@ class Settings(BaseSettings):
         
         # Set Celery URLs if not provided
         if not self.CELERY_BROKER_URL:
-            self.CELERY_BROKER_URL = self.REDIS_URL + "/0"
+            # Replace localhost with redis container name
+            redis_url = self.REDIS_URL.replace("localhost", "redis")
+            self.CELERY_BROKER_URL = redis_url + "/0"
         if not self.CELERY_RESULT_BACKEND:
-            self.CELERY_RESULT_BACKEND = self.REDIS_URL + "/0"
+            # Replace localhost with redis container name
+            redis_url = self.REDIS_URL.replace("localhost", "redis")
+            self.CELERY_RESULT_BACKEND = redis_url + "/0"
     
     # CORS
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
