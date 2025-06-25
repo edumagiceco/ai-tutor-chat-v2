@@ -41,9 +41,19 @@ class ReportGenerator:
     
     def _setup_fonts(self):
         """Setup fonts for Korean support."""
-        # For now, use default fonts
-        # In production, you would register Korean fonts here
         reportlab.rl_config.warnOnMissingFontGlyphs = 0
+        
+        # Try to register Korean font if available
+        try:
+            font_path = os.path.join(os.path.dirname(__file__), "../../fonts/NanumGothic.ttf")
+            if os.path.exists(font_path):
+                pdfmetrics.registerFont(TTFont('NanumGothic', font_path))
+                # Set as default font for better Korean support
+                from reportlab.lib.styles import getSampleStyleSheet
+                from reportlab.lib.enums import TA_LEFT, TA_CENTER
+        except Exception as e:
+            print(f"Warning: Could not load Korean font: {e}")
+            # Continue with default fonts
     
     def _setup_custom_styles(self):
         """Setup custom paragraph styles for the report."""
