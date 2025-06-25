@@ -62,10 +62,24 @@ docker logs ai-tutor-mysql-1
 - **API Documentation**: http://localhost:8081/docs
 - **AI Service**: http://localhost:8000/docs
 
-### 초기 계정 정보
-- **슈퍼 관리자**: admin@ai-tutor.com / admin123!@#
-- **기관 관리자**: institution@ai-tutor.com / inst123!
-- **일반 사용자**: user@ai-tutor.com / user123!
+### 테스트 계정 정보
+
+#### 권한별 계정 목록
+
+1. **슈퍼 관리자 (Super Admin)**
+   - 이메일: `admin@ai-tutor.com`
+   - 비밀번호: `admin123!@#`
+   - 권한: 전체 시스템 관리, 모든 기능 접근 가능
+
+2. **기관 관리자 (Institution Admin)**
+   - 이메일: `institution@ai-tutor.com`
+   - 비밀번호: `inst123!`
+   - 권한: 소속 기관 사용자 관리, 기관별 설정
+
+3. **일반 사용자 (User)**
+   - 이메일: `user@ai-tutor.com`
+   - 비밀번호: `user123!`
+   - 권한: AI 채팅, 학습 기능 사용
 
 ## 주요 기능
 
