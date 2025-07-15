@@ -17,6 +17,10 @@ RUN apt-get update && apt-get install -y \
     # For Pillow/ReportLab
     libjpeg-dev \
     zlib1g-dev \
+    libfreetype6-dev \
+    liblcms2-dev \
+    libopenjp2-7-dev \
+    libtiff-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching

@@ -1,0 +1,60 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly scan
+
+jobs:
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      # Python security scan
+      - name: Run Bandit Security Scan
+        uses: gaurav-nelson/bandit-action@v1
+        with:
+          path: "backend/"
+          level: medium
+          confidence: medium
+          exit_zero: true
+          
+      # Dependency vulnerability scan
+      - name: Run Safety Check
+        run: |
+          pip install safety
+          cd backend && safety check --json
+          
+      # Container scan
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+          
+      # JavaScript security scan
+      - name: Run npm audit
+        run: |
+          cd frontend
+          npm audit --audit-level=moderate
+          
+      # Secret scanning
+      - name: Detect secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD

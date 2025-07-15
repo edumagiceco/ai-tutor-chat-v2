@@ -5,29 +5,29 @@ from pydantic import BaseModel, Field
 
 
 class ReportType(str, Enum):
-    USER_PROGRESS = "user_progress"
-    LEARNING_ANALYTICS = "learning_analytics"
-    AI_USAGE = "ai_usage"
-    MONTHLY_SUMMARY = "monthly_summary"
-    CUSTOM_REPORT = "custom_report"
+    user_progress = "user_progress"
+    learning_analytics = "learning_analytics"
+    ai_usage = "ai_usage"
+    monthly_summary = "monthly_summary"
+    custom_report = "custom_report"
 
 
 class ReportFormat(str, Enum):
-    PDF = "pdf"
-    EXCEL = "excel"
-    CSV = "csv"
+    pdf = "pdf"
+    excel = "excel"
+    csv = "csv"
 
 
 class ReportStatus(str, Enum):
-    PENDING = "pending"
-    PROCESSING = "processing"
-    COMPLETED = "completed"
-    FAILED = "failed"
+    pending = "pending"
+    processing = "processing"
+    completed = "completed"
+    failed = "failed"
 
 
 class ReportParameters(BaseModel):
-    date_from: Optional[datetime] = None
-    date_to: Optional[datetime] = None
+    date_from: Optional[str] = None  # Changed to str to handle JSON serialization
+    date_to: Optional[str] = None    # Changed to str to handle JSON serialization
     user_ids: Optional[List[int]] = []
     institution_id: Optional[int] = None
     user_scope: Optional[str] = "all"  # all, institution, individual
@@ -38,7 +38,7 @@ class ReportParameters(BaseModel):
 
 class ReportGenerateRequest(BaseModel):
     report_type: ReportType
-    format: ReportFormat = ReportFormat.PDF
+    format: ReportFormat = ReportFormat.pdf
     parameters: ReportParameters
 
 

@@ -1,0 +1,121 @@
+version: '3.8'
+
+services:
+  frontend:
+    image: magicecole/ai-tutor-frontend:v1
+    ports:
+      - "3001:3000"  # 다른 포트 사용 (staging)
+    environment:
+      - REACT_APP_API_URL=http://backend:8080
+    depends_on:
+      - backend
+    networks:
+      - ai-tutor-staging-network
+    restart: unless-stopped
+
+  backend:
+    image: magicecole/ai-tutor-backend:v1
+    ports:
+      - "8082:8080"  # 다른 포트 사용 (staging)
+    environment:
+      - DATABASE_URL=mysql://magic7:ZAvEjgkEzu8K**@mysql:3306/magic7_staging
+      - REDIS_URL=redis://redis:6379
+      - AI_SERVICE_URL=http://ai-service:8000
+      - QDRANT_URL=http://qdrant:6333
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ALGORITHM=${JWT_ALGORITHM}
+      - JWT_EXPIRE_MINUTES=${JWT_EXPIRE_MINUTES}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DEBUG=False
+      - LOG_LEVEL=INFO
+    depends_on:
+      - mysql
+      - redis
+      - qdrant
+      - ai-service
+    networks:
+      - ai-tutor-staging-network
+    restart: unless-stopped
+    volumes:
+      - ./backend/reports:/app/app/reports
+
+  ai-service:
+    image: magicecole/ai-tutor-ai-service:v1
+    ports:
+      - "8001:8000"  # 다른 포트 사용 (staging)
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DATABASE_URL=mysql://magic7:ZAvEjgkEzu8K**@mysql:3306/magic7_staging
+      - QDRANT_URL=http://qdrant:6333
+    depends_on:
+      - mysql
+      - qdrant
+    networks:
+      - ai-tutor-staging-network
+    restart: unless-stopped
+
+  celery-worker:
+    image: magicecole/ai-tutor-celery-worker:v1
+    environment:
+      - DATABASE_URL=mysql://magic7:ZAvEjgkEzu8K**@mysql:3306/magic7_staging
+      - REDIS_URL=redis://redis:6379
+      - CELERY_BROKER_URL=redis://redis:6379
+      - CELERY_RESULT_BACKEND=redis://redis:6379
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - ai-tutor-staging-network
+    restart: unless-stopped
+    volumes:
+      - ./backend/reports:/app/app/reports
+
+  mysql:
+    image: mysql:8.0
+    platform: linux/amd64
+    environment:
+      - MYSQL_DATABASE=magic7_staging
+      - MYSQL_USER=magic7
+      - MYSQL_PASSWORD=ZAvEjgkEzu8K**
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - mysql_staging_data:/var/lib/mysql
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3308:3306"  # 다른 포트 사용 (staging)
+    networks:
+      - ai-tutor-staging-network
+    restart: unless-stopped
+
+  qdrant:
+    image: qdrant/qdrant
+    ports:
+      - "6334:6333"  # 다른 포트 사용 (staging)
+    volumes:
+      - qdrant_staging_data:/qdrant/storage
+    networks:
+      - ai-tutor-staging-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"  # 다른 포트 사용 (staging)
+    volumes:
+      - redis_staging_data:/data
+    networks:
+      - ai-tutor-staging-network
+    restart: unless-stopped
+
+volumes:
+  mysql_staging_data:
+  qdrant_staging_data:
+  redis_staging_data:
+
+networks:
+  ai-tutor-staging-network:
+    driver: bridge

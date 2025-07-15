@@ -773,11 +773,11 @@ async def generate_report(
     """
     # Generate report title based on type
     title_map = {
-        ReportType.USER_PROGRESS: "사용자 학습 진도 리포트",
-        ReportType.LEARNING_ANALYTICS: "학습 분석 리포트",
-        ReportType.AI_USAGE: "AI 도구 사용 현황",
-        ReportType.MONTHLY_SUMMARY: f"{datetime.now().strftime('%Y년 %m월')} 월간 종합 리포트",
-        ReportType.CUSTOM_REPORT: "맞춤형 리포트"
+        ReportType.user_progress: "사용자 학습 진도 리포트",
+        ReportType.learning_analytics: "학습 분석 리포트",
+        ReportType.ai_usage: "AI 도구 사용 현황",
+        ReportType.monthly_summary: f"{datetime.now().strftime('%Y년 %m월')} 월간 종합 리포트",
+        ReportType.custom_report: "맞춤형 리포트"
     }
     
     # Create report record

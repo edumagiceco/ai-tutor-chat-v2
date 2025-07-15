@@ -55,6 +55,116 @@ docker-compose up -d
 docker logs ai-tutor-mysql-1
 ```
 
+## Windows에서 Docker Hub 이미지로 실행하기 (Intel/AMD64)
+
+### 사전 요구사항
+- Windows 10/11 (64bit)
+- Docker Desktop for Windows 설치
+- WSL2 활성화 (권장)
+
+### 실행 방법
+
+1. **프로젝트 다운로드**
+```powershell
+git clone https://github.com/MagicecoleAI/ai-tutor.git
+cd ai-tutor
+```
+
+2. **환경 변수 파일 생성**
+```powershell
+# PowerShell에서 실행
+copy .env.example .env
+
+# .env 파일을 메모장으로 열어 API 키 설정
+notepad .env
+```
+
+필수 환경 변수:
+```
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
+MYSQL_ROOT_PASSWORD=your_mysql_root_password
+JWT_SECRET=your_jwt_secret_key_here
+```
+
+3. **Docker Hub 이미지를 사용한 실행**
+
+Production 환경:
+```powershell
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+Staging 환경 (테스트용):
+```powershell
+docker-compose -f docker-compose.staging.yml up -d
+```
+
+4. **실행 확인**
+```powershell
+# 컨테이너 상태 확인
+docker-compose -f docker-compose.prod.yml ps
+
+# 로그 확인
+docker-compose -f docker-compose.prod.yml logs -f
+```
+
+5. **시스템 접속**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8081
+- API Documentation: http://localhost:8081/docs
+- AI Service: http://localhost:8000/docs
+
+### Windows 환경 특별 주의사항
+
+1. **Docker Desktop 설정**
+   - Settings → Resources → WSL Integration 활성화
+   - Settings → Resources → Advanced에서 충분한 메모리 할당 (최소 8GB 권장)
+
+2. **방화벽 설정**
+   - Windows Defender 방화벽에서 Docker Desktop 허용
+   - 필요시 포트 3000, 8081, 8000, 3307, 6379, 6333 열기
+
+3. **디스크 공간**
+   - 최소 20GB 여유 공간 필요
+   - Docker 이미지 저장 위치 확인: Settings → Resources → Disk image location
+
+4. **성능 최적화**
+   - WSL2 사용 권장 (Hyper-V보다 성능 우수)
+   - Windows 실시간 보호에서 Docker 폴더 제외
+
+### 문제 해결 (Windows)
+
+1. **컨테이너가 시작되지 않을 때**
+```powershell
+# Docker Desktop 재시작
+# 시스템 트레이에서 Docker 아이콘 우클릭 → Restart
+
+# WSL 재시작
+wsl --shutdown
+```
+
+2. **포트 충돌 문제**
+```powershell
+# 포트 사용 확인
+netstat -ano | findstr :3000
+netstat -ano | findstr :8081
+
+# 필요시 docker-compose.prod.yml에서 포트 변경
+```
+
+3. **MySQL 연결 문제**
+   - Windows에서는 localhost 대신 127.0.0.1 사용 권장
+   - MySQL Workbench로 연결 테스트: 127.0.0.1:3307
+
+### 서비스 중지
+```powershell
+# Production 환경 중지
+docker-compose -f docker-compose.prod.yml down
+
+# 볼륨까지 삭제 (데이터 초기화)
+docker-compose -f docker-compose.prod.yml down -v
+```
+
 ### 접속 정보
 
 - **Frontend**: http://localhost:3000

@@ -2,35 +2,31 @@ version: '3.8'
 
 services:
   frontend:
-    build: 
-      context: ./frontend
-      dockerfile: Dockerfile.dev
+    image: magicecole/ai-tutor-frontend:v1
     ports:
       - "3000:3000"
     environment:
-      - REACT_APP_API_URL=http://localhost:8081
+      - REACT_APP_API_URL=http://backend:8080
     depends_on:
       - backend
     networks:
       - ai-tutor-network
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+    restart: unless-stopped
 
   backend:
-    build: ./backend
+    image: magicecole/ai-tutor-backend:v1
     ports:
       - "8081:8080"
     environment:
-      - DATABASE_URL=mysql+pymysql://magic7:ZAvEjgkEzu8K**@mysql:3306/magic7?charset=utf8mb4
+      - DATABASE_URL=mysql://magic7:ZAvEjgkEzu8K**@mysql:3306/magic7
       - REDIS_URL=redis://redis:6379
       - AI_SERVICE_URL=http://ai-service:8000
       - QDRANT_URL=http://qdrant:6333
       - JWT_SECRET=${JWT_SECRET}
-      - SECRET_KEY=${JWT_SECRET}
+      - JWT_ALGORITHM=${JWT_ALGORITHM}
+      - JWT_EXPIRE_MINUTES=${JWT_EXPIRE_MINUTES}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - PYTHONPATH=/app
     depends_on:
       - mysql
       - redis
@@ -38,62 +34,52 @@ services:
       - ai-service
     networks:
       - ai-tutor-network
+    restart: unless-stopped
     volumes:
-      - ./backend:/app
-      - ./backend/app/reports:/app/app/reports
-
-  celery-worker:
-    build: 
-      context: ./backend
-      dockerfile: Dockerfile.celery.simple
-    environment:
-      - DATABASE_URL=mysql+pymysql://magic7:ZAvEjgkEzu8K**@mysql:3306/magic7?charset=utf8mb4
-      - REDIS_URL=redis://redis:6379
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - AI_SERVICE_URL=http://ai-service:8000
-      - QDRANT_URL=http://qdrant:6333
-      - JWT_SECRET=${JWT_SECRET}
-      - SECRET_KEY=${JWT_SECRET}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - PYTHONPATH=/app
-    depends_on:
-      - mysql
-      - redis
-      - backend
-    networks:
-      - ai-tutor-network
-    volumes:
-      - ./backend:/app
-      - ./backend/app/reports:/app/app/reports
+      - ./backend/reports:/app/app/reports
 
   ai-service:
-    build: ./ai-service
+    image: magicecole/ai-tutor-ai-service:v1
     ports:
       - "8000:8000"
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - DATABASE_URL=mysql+pymysql://magic7:ZAvEjgkEzu8K**@mysql:3306/magic7?charset=utf8mb4
+      - DATABASE_URL=mysql://magic7:ZAvEjgkEzu8K**@mysql:3306/magic7
       - QDRANT_URL=http://qdrant:6333
-      - PYTHONPATH=/app
     depends_on:
       - mysql
       - qdrant
     networks:
       - ai-tutor-network
+    restart: unless-stopped
+
+  celery-worker:
+    image: magicecole/ai-tutor-celery-worker:v1
+    environment:
+      - DATABASE_URL=mysql://magic7:ZAvEjgkEzu8K**@mysql:3306/magic7
+      - REDIS_URL=redis://redis:6379
+      - CELERY_BROKER_URL=redis://redis:6379
+      - CELERY_RESULT_BACKEND=redis://redis:6379
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - ai-tutor-network
+    restart: unless-stopped
     volumes:
-      - ./ai-service:/app
+      - ./backend/reports:/app/app/reports
 
   mysql:
     image: mysql:8.0
-    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    platform: linux/amd64
     environment:
       - MYSQL_DATABASE=magic7
       - MYSQL_USER=magic7
       - MYSQL_PASSWORD=ZAvEjgkEzu8K**
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-rootpassword}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
       - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -101,6 +87,7 @@ services:
       - "3307:3306"
     networks:
       - ai-tutor-network
+    restart: unless-stopped
 
   qdrant:
     image: qdrant/qdrant
@@ -110,6 +97,7 @@ services:
       - qdrant_data:/qdrant/storage
     networks:
       - ai-tutor-network
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
@@ -119,6 +107,7 @@ services:
       - redis_data:/data
     networks:
       - ai-tutor-network
+    restart: unless-stopped
 
 volumes:
   mysql_data:
